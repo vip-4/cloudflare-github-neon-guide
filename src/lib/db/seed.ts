@@ -1,11 +1,10 @@
-import { neon } from '@neondatabase/serverless';
-
-const sql = neon(process.env.DATABASE_URL!);
+import { db } from '@/lib/db/connection';
+import { visits } from '@/lib/db/schema';
 
 async function seed() {
   const paths = ['/', '/about', '/contact', '/api/hello'];
   for (const path of paths) {
-    await sql`INSERT INTO visits (path) VALUES (${path}) ON CONFLICT DO NOTHING`;
+    await db.insert(visits).values({ path }).onConflictDoNothing();
   }
   console.log('Seed completed');
 }

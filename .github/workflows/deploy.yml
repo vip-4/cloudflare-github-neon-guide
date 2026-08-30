@@ -46,9 +46,6 @@ jobs:
       - run: npm run db:push
         env:
           DATABASE_URL: postgres://test:test@localhost:5432/testdb
-      - run: npm run db:seed
-        env:
-          DATABASE_URL: postgres://test:test@localhost:5432/testdb
       - run: npm run build
 
   deploy-preview:
@@ -73,7 +70,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: fullstack-guide-preview
+          projectName: cloudflare-github-neon-guide-preview
           directory: out
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
@@ -99,6 +96,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: fullstack-guide
+          projectName: cloudflare-github-neon-guide
           directory: out
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
