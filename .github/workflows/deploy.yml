@@ -55,6 +55,7 @@ jobs:
     permissions:
       contents: read
       pages: write
+      deployments: write
     environment:
       name: preview
       url: ${{ steps.deploy.outputs.url }}
@@ -81,6 +82,7 @@ jobs:
     permissions:
       contents: read
       pages: write
+      deployments: write
     environment:
       name: production
       url: ${{ steps.deploy.outputs.url }}
