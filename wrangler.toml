@@ -1,0 +1,9 @@
+name = "fullstack-guide"
+compatibility_date = "2026-08-30"
+pages_build_output_dir = "out"
+
+[env.production]
+DATABASE_URL = "postgres://user:pass@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require"
+
+[env.preview]
+DATABASE_URL = "postgres://user:pass@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require"
