@@ -1,9 +1,8 @@
 import { Redis } from '@upstash/redis';
 
 const redis = new Redis({
-  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-  username: 'default',
-  password: process.env.REDIS_PASSWORD,
+  url: process.env.REDIS_URL || '',
+  token: process.env.REDIS_TOKEN || '',
 });
 
 export async function getCached(key: string) {
