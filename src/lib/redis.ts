@@ -1,12 +1,23 @@
 import { Redis } from '@upstash/redis';
 
-const redis = new Redis({
-  url: process.env.REDIS_URL || '',
-  token: process.env.REDIS_TOKEN || '',
-});
+const redisUrl = process.env.REDIS_URL || '';
+const redisToken = process.env.REDIS_TOKEN || '';
+
+let redis: Redis | undefined;
+try {
+  if (redisUrl && redisToken) {
+    redis = new Redis({
+      url: redisUrl,
+      token: redisToken,
+    });
+  }
+} catch (e) {
+  console.warn('Redis client init failed; cache functions will be no-ops.', e);
+}
 
 export async function getCached(key: string) {
   try {
+    if (!redis) return null;
     const cached = await redis.get(key);
     return cached;
   } catch (error) {
@@ -17,6 +28,7 @@ export async function getCached(key: string) {
 
 export async function setCached(key: string, value: unknown, ttl: number = 3600) {
   try {
+    if (!redis) return false;
     await redis.set(key, JSON.stringify(value), { ex: ttl });
     return true;
   } catch (error) {
@@ -27,6 +39,7 @@ export async function setCached(key: string, value: unknown, ttl: number = 3600)
 
 export async function deleteCached(key: string) {
   try {
+    if (!redis) return false;
     await redis.del(key);
     return true;
   } catch (error) {
