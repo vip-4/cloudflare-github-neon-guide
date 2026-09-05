@@ -36,3 +36,7 @@ coverage
 # Database
 *.db
 *.sqlite
+
+.wrangler
+.git
+.gitignore
