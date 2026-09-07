@@ -99,12 +99,12 @@ Neon provides two connection modes:
 
 **Direct connection (development):**
 ```
-postgres://neondb_owner:npg_M4PQLswtKh0o@ep-muddy-paper-ax88sn38-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+postgres://<user>:<password>@ep-muddy-paper-ax88sn38-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 ```
 
 **Pooled connection (production/serverless):**
 ```
-postgres://neondb_owner:npg_M4PQLswtKh0o@ep-muddy-paper-ax88sn38-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+postgres://<user>:<password>@ep-muddy-paper-ax88sn38-pooler.c-4.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 ```
 
 **Important parameters:**
@@ -575,4 +575,34 @@ Visit `http://localhost:3000` and verify:
 
 ## CI Trigger
 - Last CI trigger: 2026-08-31 05:57:33
+
+---
+
+## 2026-09-08 场景5升级（GitHub Pages + Cloudflare + Neon 双部署 & AI 语义搜索）
+
+### 新增能力
+| 能力 | 说明 |
+|------|------|
+| **GitHub Pages 镜像** | CI 新增 `deploy-github-pages` job：`NEXT_PUBLIC_BASE_PATH=/cloudflare-github-neon-guide` 构建 → `actions/deploy-pages` → `https://vip-4.github.io/cloudflare-github-neon-guide/`（首次需在仓库 Settings→Pages 选择 "GitHub Actions" 源） |
+| **Neon pgvector 语义搜索** | `functions/api/search/index.ts`：Workers AI `@cf/baai/bge-m3` 免费 embedding → `ORDER BY embedding <=> $vector` 余弦检索，无 AI/无向量自动降级 ILIKE 关键词 |
+| **向量种子化** | `functions/api/seed/index.ts` 批量生成缺失向量回填；启用一次 `POST /api/seed` 即可 |
+| **Neon 迁移** | `sql/pages.sql`（幂等）：`vector` 扩展 + `visits`/`pages` 表 + HNSW 索引 + 采样文档 |
+| **缓存/安全头** | `_headers`：`/_next/static/*` immutable 长缓存、`/api/*` no-store、安全响应头 |
+
+### 需要的 Secrets / 环境变量（Cloudflare Pages + GitHub）
+- `DATABASE_URL`（Neon pooled 连接串）、`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`、`REDIS_URL`/`REDIS_TOKEN`（可选）
+- Pages Functions 运行时读 `context.env.DATABASE_URL`；语义搜索使用 `[[ai]]` 绑定（无需 API key）
+
+### 使用
+```bash
+psql "$DATABASE_URL" -f sql/pages.sql     # 建表（或推 master 后 CI 内执行）
+curl -X POST https://<你的-pages域名>/api/seed -d '{}'          # 生成首批向量
+curl -X POST https://<你的-pages域名>/api/search -d '{"query":"pgvector"}'  # mode:"semantic"
+```
+
+### ⚠️ 安全提醒
+本 README 第 2.2 节文档里**明文包含 Neon 连接串及密码**（`neondb_owner:npg_M4PQLswtKh0o@ep-muddy-paper-...`）。这是演示文档，但**已推送 GitHub 即为公开/半公开**——生产务必：
+- 立即在 Neon 控制台**轮换该角色密码**；
+- 仓库中只保留占位符 `postgres://user:password@host/db`；
+- 真实连接串只放 GitHub Actions Secrets 与 Cloudflare Pages 加密变量。
 

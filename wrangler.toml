@@ -1,3 +1,7 @@
 name = "fullstack-guide"
 compatibility_date = "2026-08-30"
 pages_build_output_dir = "out"
+
+# Cloudflare Workers AI（语义搜索 embedding，免费，无需 API key）
+[[ai]]
+binding = "AI"
