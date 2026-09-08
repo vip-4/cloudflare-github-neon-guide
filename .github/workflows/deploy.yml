@@ -118,6 +118,16 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy out --project-name=cloudflare-github-neon-guide --branch=main
+      - name: Notify Feishu (best effort)
+        if: always()
+        env:
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_CHAT_ID: ${{ secrets.FEISHU_CHAT_ID }}
+        run: |
+          status="${{ job.status }}"
+          node scripts/feishu-notify.mjs "构建 ${status}" "仓库 cloudflare-github-neon-guide · main 分支构建状态：**${status}** · 站点 https://cloudflare-github-neon-guide-eum.pages.dev"
 
   deploy-github-pages:
     if: github.ref == 'refs/heads/main'
@@ -147,3 +157,22 @@ jobs:
           path: out
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  mirror:
+    if: github.ref == 'refs/heads/main'
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Mirror to Gitee
+        env:
+          TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          git push --force "https://vip882:${TOKEN}@gitee.com/vip882/cloudflare-github-neon-guide.git" main
+      - name: Mirror to GitCode/AtomGit
+        env:
+          TOKEN: ${{ secrets.ATOMGIT_TOKEN }}
+        run: |
+          git push --force "https://zzw1208:${TOKEN}@gitcode.com/zzw1208/cloudflare-github-neon-guide.git" main
