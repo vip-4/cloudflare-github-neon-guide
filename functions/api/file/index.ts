@@ -1,5 +1,5 @@
 type Env = {
-  ASSETS?: any;
+  R2_STORE?: any;
 };
 
 const EXT_MIME: Record<string, string> = {
@@ -36,14 +36,14 @@ export async function onRequestGet(context: { request: Request; env: Env }) {
       });
     }
 
-    if (!context.env.ASSETS) {
+    if (!context.env.R2_STORE) {
       return new Response(JSON.stringify({ error: 'R2 binding not configured', key }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const object = await context.env.ASSETS.get(key);
+    const object = await context.env.R2_STORE.get(key);
     if (!object) {
       return new Response(JSON.stringify({ error: 'Not found', key }), {
         status: 404,
