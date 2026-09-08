@@ -121,9 +121,6 @@ jobs:
             echo "::notice::R2 secrets not set, skipping R2 init"
             exit 0
           fi
-          tmp=$(mktemp -d)
-          cd "$tmp"
-          npm init -y >/dev/null && npm i aws4fetch >/dev/null 2>&1
           node "$GITHUB_WORKSPACE/scripts/r2-init.mjs"
         continue-on-error: true
       - name: Deploy production to Cloudflare Pages
