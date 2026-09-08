@@ -6,8 +6,8 @@ pages_build_output_dir = "out"
 [ai]
 binding = "AI"
 
-# R2 边缘存储桶（图片/附件/SDK 静态资源；Function 通过 env.R2_STORE 边缘直读）
-# 注意：Pages 项目内 ASSETS 为保留名（静态资源命名空间），故用 R2_STORE。
-[[r2_buckets]]
-binding = "R2_STORE"
-bucket_name = "guide-assets"
+# R2 边缘存储桶：账户 002 需先在 Dashboard 开启 R2 服务（API 10042），开启后打开下面绑定再部署。
+# 开启后恢复：
+# [[r2_buckets]]
+# binding = "R2_STORE"
+# bucket_name = "guide-assets"
