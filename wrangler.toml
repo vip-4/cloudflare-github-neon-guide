@@ -5,3 +5,8 @@ pages_build_output_dir = "out"
 # Cloudflare Workers AI（语义搜索 embedding，免费，无需 API key）
 [ai]
 binding = "AI"
+
+# R2 边缘存储桶（图片/附件/SDK 静态资源；Function 通过 env.ASSETS 边缘直读）
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "guide-assets"

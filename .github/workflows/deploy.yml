@@ -110,6 +110,22 @@ jobs:
           sudo apt-get install -y -qq postgresql-client >/dev/null
           psql "$DATABASE_URL" -v ON_ERROR_STOP=0 -f sql/pages.sql
         continue-on-error: true
+      - name: R2 init (create bucket + upload assets)
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          if [ -z "$R2_ACCESS_KEY_ID" ]; then
+            echo "::notice::R2 secrets not set, skipping R2 init"
+            exit 0
+          fi
+          tmp=$(mktemp -d)
+          cd "$tmp"
+          npm init -y >/dev/null && npm i aws4fetch >/dev/null 2>&1
+          node "$GITHUB_WORKSPACE/scripts/r2-init.mjs"
+        continue-on-error: true
       - name: Deploy production to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3
