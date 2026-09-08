@@ -7,6 +7,16 @@ type Env = {
 
 const EMBED_MODEL = '@cf/baai/bge-m3';
 
+function embeddingOf(res: any, index = 0): number[] | undefined {
+  const row = res?.data?.[index];
+  if (!row) return undefined;
+  if (Array.isArray(row)) return row.length ? row : undefined;
+  if (Array.isArray(row.embedding)) return row.embedding;
+  const vals = Object.values(row);
+  if (vals.length && vals.every((v) => typeof v === 'number')) return vals as number[];
+  return undefined;
+}
+
 function vectorLiteral(embedding: number[]): string {
   return `[${embedding.join(',')}]`;
 }
@@ -59,7 +69,7 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
     if (context.env.AI) {
       try {
         const aiRes: any = await context.env.AI.run(EMBED_MODEL, { text: [searchTerm] });
-        embedding = aiRes?.data?.[0]?.embedding;
+        embedding = embeddingOf(aiRes);
       } catch (aiError) {
         console.warn('AI embedding failed, falling back to keyword:', aiError);
       }
