@@ -1,0 +1,3 @@
+R2 edge-read demo
+- object served straight from Cloudflare edge storage via /api/file?key=demo/sample.txt
+- ETag + Cache-Control: immutable apply automatically
