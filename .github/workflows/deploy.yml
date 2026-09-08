@@ -72,13 +72,14 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - uses: cloudflare/pages-action@v1
+      - name: Deploy preview to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        id: deploy
+        continue-on-error: true
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: cloudflare-github-neon-guide-preview
-          directory: out
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy out --project-name=cloudflare-github-neon-guide --branch=${{ github.head_ref }}
 
   deploy-production:
     if: github.ref == 'refs/heads/main'
@@ -99,13 +100,23 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - uses: cloudflare/pages-action@v1
+      - name: Neon migrate (best effort)
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::notice::DATABASE_URL secret not set, skipping Neon migration"
+            exit 0
+          fi
+          sudo apt-get update -qq >/dev/null
+          sudo apt-get install -y -qq postgresql-client >/dev/null
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=0 -f sql/pages.sql
+        continue-on-error: true
+      - name: Deploy production to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: cloudflare-github-neon-guide
-          directory: out
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy out --project-name=cloudflare-github-neon-guide --branch=main
 
   deploy-github-pages:
     if: github.ref == 'refs/heads/main'
